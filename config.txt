@@ -1,0 +1,17 @@
+port,com3
+oscilloscope,USB0::0x0699::0x0408::C034116::INSTR
+directory_open,C:\Users\sever\Desktop\get_waveform_example\results\open\
+directory_close,C:\Users\sever\Desktop\get_waveform_example\results\close\
+post_sample,500
+iterations,100
+oscilloscope_sample,10000000
+oscilloscope_sample_start,4990000
+oscilloscope_sample_stop,5900000
+temperature_threshold,100
+gas_threshold,70
+voltage_threshold,7
+module,6v5rINDdef
+iteration_start,0
+minutes,150
+iteration_sample,200
+noosc,1
