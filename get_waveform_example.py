@@ -23,6 +23,7 @@ directory_open = ""
 directory_close = ""
 post_sample = 1
 iterations = 0
+delay = 0
 
 module = "NAME"
 iteration_start = 0
@@ -91,13 +92,17 @@ def main():
 				noosc = True
 			elif(key == "iteration_sample"):
 				iteration_sample = int(value)
+			elif(key == "delay"):
+				delay = float(value)
+			elif(key == "sample_delay"):
+				sample_delay = (int(value)).to_bytes(1, byteorder="big")
 
 
 		print(f'Read {line_count} lines.')
 
 	rm = visa.ResourceManager()
 	scope = rm.get_instrument(oscilloscope)
-	ser = serial.Serial(port, 9600, timeout=10, dsrdtr=False, rtscts=False)
+	ser = serial.Serial(port, 9600, timeout=1, dsrdtr=False, rtscts=False)
 	print(ser.name)
 
 	osc.setup(scope, oscilloscope_sample, oscilloscope_sample_start, oscilloscope_sample_stop)
@@ -108,7 +113,6 @@ def main():
 
 #Confirm that module started up initilized in expected mode
 	print("Confirming Config Mode")
-	ser.write(b'\x80')
 	ser.write(b'\x80')
 	ser.write(b'\x80')
 	state = ser.read(1)
@@ -122,51 +126,81 @@ def main():
 		return
 	print("Config Mode confirmed")
 
+	print("");
+
 	print("Setting Temperature Threshold")
-	ser.write(bytes("t", 'utf-8'))
+	ser.write(bytes(b'\x21'))
 	ser.write(temperature_threshold)
-	ser.write(bytes("t", 'utf-8'))
-	state = ser.read(1)
-	state = int.from_bytes(state, byteorder='big')
-	status.print_status(state)
-	if(status.mode_is_timeout(state)):
+	state0 = ser.read(1)
+	state1 = ser.read(1)
+	state0 = int.from_bytes(state0, byteorder='big')
+	state1 = int.from_bytes(state1, byteorder='big')
+	status.print_status(state1)
+	if(status.mode_is_timeout(state1)):
 		print('Exiting...')
 		return
-	if not status.mode_is_config(state):
+	if not status.mode_is_config(state1):
 		print("Module is in wrong mode")
 		return
+	print("Temperature set to: " + str(state0) + " or " + str(state0/2.0) + "degC")
+
+	print("")
 
 	print("Setting Gas Threshold")
-	ser.write(bytes("g", 'utf-8'))
+	ser.write(bytes(b'\x22'))
 	ser.write(gas_threshold)
-	ser.write(bytes("g", 'utf-8'))
-	state = ser.read(1)
-	state = int.from_bytes(state, byteorder='big')
-	status.print_status(state)
-	if(status.mode_is_timeout(state)):
+	state0 = ser.read(1)
+	state1 = ser.read(1)
+	state0 = int.from_bytes(state0, byteorder='big')
+	state1 = int.from_bytes(state1, byteorder='big')
+	status.print_status(state1)
+	if(status.mode_is_timeout(state1)):
 		print('Exiting...')
 		return
-	if not status.mode_is_config(state):
+	if not status.mode_is_config(state1):
 		print("Module is in wrong mode")
 		return
+	print("Gas set to: " + str(state0))
+
+	print("")
 
 	print("Setting Voltage Threshold")
-	ser.write(bytes("v", 'utf-8'))
+	ser.write(bytes(b'\x24'))
 	ser.write(voltage_threshold)
-	ser.write(bytes("v", 'utf-8'))
-	state = ser.read(1)
-	state = int.from_bytes(state, byteorder='big')
-	status.print_status(state)
-	if(status.mode_is_timeout(state)):
+	state0 = ser.read(1)
+	state1 = ser.read(1)
+	state0 = int.from_bytes(state0, byteorder='big')
+	state1 = int.from_bytes(state1, byteorder='big')
+	status.print_status(state1)
+	if(status.mode_is_timeout(state1)):
 		print('Exiting...')
 		return
-	if not status.mode_is_config(state):
+	if not status.mode_is_config(state1):
 		print("Module is in wrong mode")
 		return
+	print("Voltage set to: " + str(state0) + " or " + str(state0/2.0/100) + "volts")
+
+	print("")
+
+	print("Setting Sample Delay ")
+	ser.write(bytes(b'\x30'))
+	ser.write(sample_delay)
+	state0 = ser.read(1)
+	state1 = ser.read(1)
+	state0 = int.from_bytes(state0, byteorder='big')
+	state1 = int.from_bytes(state1, byteorder='big')
+	status.print_status(state1)
+	if(status.mode_is_timeout(state1)):
+		print('Exiting...')
+		return
+	if not status.mode_is_config(state1):
+		print("Module is in wrong mode")
+		return
+	print("Delay set to: " + str(state0) + "ms")
+
 
 #Confirm that module switched to run mode
 	print("Confirming Run Mode")
-	ser.write(b'\x40')
 	ser.write(b'\x40')
 	ser.write(b'\x40')
 	state = ser.read(1)
@@ -185,7 +219,7 @@ def main():
 	print(str(start_time))
 	print(str(end_time))
 
-
+	return
 #perform the requested number of iterations
 	while (iteration_counter < iterations and not timed) or (timed and time.monotonic()<end_time):
 #instruct module to bring control signal high
@@ -211,7 +245,7 @@ def main():
 
 #retrieve capture data
 		if noosc:
-			time.sleep(0.1)
+			time.sleep(delay)
 
 
 		if ((iteration_counter - iteration_start) % iteration_sample == 0):
@@ -263,7 +297,7 @@ def main():
 			return
 
 		if noosc:
-			time.sleep(0.1)
+			time.sleep(delay)
 
 		if ((iteration_counter - iteration_start) % iteration_sample == 0):
 			capture = osc.capture(scope)

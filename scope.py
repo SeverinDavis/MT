@@ -11,7 +11,7 @@ def setup(scope, data, data_start, data_stop):
 	scope.write('TRIGger:A:TYPe EDGE')
 	scope.write('TRIGger:A:EDGE:COUPling DC')
 	scope.write('TRIGger:A:EDGE:SLOpe EITHER')
-	scope.write('TRIGger:A:HOLDoff:TIME 400E-03')
+	scope.write('TRIGger:A:HOLDoff:TIME 150E-03')
 	#probe has as attenuation of 10 so 5V = 0.5 and 2.5V (Threshold) = 0.25
 	scope.write('TRIGger:A:LEVel:CH1 0.25')
 	scope.write('TRIGger:A:MODe NORMAL')

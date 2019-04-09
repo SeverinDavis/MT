@@ -6,12 +6,14 @@ post_sample,500
 iterations,100
 oscilloscope_sample,10000000
 oscilloscope_sample_start,4990000
-oscilloscope_sample_stop,5900000
+oscilloscope_sample_stop,5700000
 temperature_threshold,100
 gas_threshold,70
 voltage_threshold,7
 module,6v5rINDdef
 iteration_start,0
 minutes,150
-iteration_sample,200
+iteration_sample,100
 noosc,1
+delay,0.2
+sample_delay,2
